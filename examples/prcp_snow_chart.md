@@ -262,7 +262,7 @@ report:
             output: /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data_raw.csv
             format: csvh
             content: |
-                # 1) Create summary
+                // 1) Create summary
                 final_layout := RECORD
                         STRING station_id;
                         UNSIGNED date;
@@ -277,7 +277,7 @@ report:
                     { station_id; observation_type; UNSIGNED total := SUM(GROUP, (UNSIGNED) observation_value); UNSIGNED days := COUNT(GROUP); }, station_id, observation_type );
                 //summaryDS;
                 
-                # 2) Format data for chart
+                // 2) Format data for chart
                 chart_layout := RECORD
                     STRING series;
                     DECIMAL10_2 prcp;
