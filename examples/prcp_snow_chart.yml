@@ -1,0 +1,174 @@
+# ==================================================================================
+# Precipitation and snowfall summary for specific weather stations.
+# ==================================================================================
+# Passing this template to @lpezet/etl-js will trigger the following activities (in order):
+# 1. (**extract**) Download 2018 GHCN Daily data for 2018.
+#    Some transformation will occur here too through *commands* (e.g. unzip-ing a file).
+# 2. (**load**) Load data previously downloaded and prepared into HPCC Thor Cluster for later processing.
+# 3. (**cert**) Quality Control activity to make sure data has been loaded as expected.
+# 4. (**transform**) Transform some of the data to create final dataset(s).
+# 5. (**report**) Generate a simple summary for certain stations, providing total rain (prcp) and snow fall (snow) from final dataset(s).
+# 6. (**chart**) Based an the summary generated above, create a url to visualize the data.
+
+etl:
+    - extract
+    - load
+    - cert
+    - transform
+    - report
+    - chart
+
+# ==================================================================================
+# Download data from NOAA website.
+# ==================================================================================
+extract:
+    files:
+        "/var/lib/HPCCSystems/mydropzone/noaa/ghcn/daily/by_year/2018.csv.gz":
+            source: ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/2018.csv.gz
+    commands:
+        001_unzip:
+            command: gunzip -f 2018.csv.gz
+            cwd: /var/lib/HPCCSystems/mydropzone/noaa/ghcn/daily/by_year/
+            test: "[ -f /var/lib/HPCCSystems/mydropzone/noaa/ghcn/daily/by_year/2018.csv.gz ]"
+
+# ==================================================================================
+# Load data into Thor
+# ==================================================================================
+load:
+    sprays:
+        "noaa::ghcn::daily::2018::raw":
+            format: csv
+            destinationGroup: "mythor"
+            sourcePath: /var/lib/HPCCSystems/mydropzone/noaa/ghcn/daily/by_year/2018.csv
+
+# ==================================================================================
+# Certification/QC
+# ==================================================================================
+cert:
+    ecls:
+        000_cert_daily_2018:
+            cluster: thor
+            content: |
+                layout := RECORD
+                    STRING station_id; // station identifier (GHCN Daily Identification Number)
+                    STRING date; // (yyyymmdd; where yyyy=year; mm=month; and, dd=day)
+                    STRING observation_type; // (see ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for definitions)
+                    STRING observation_value; // (see ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for units)
+                    STRING observation_time; // (if available, as hhmm where hh=hour and mm=minutes in local time)
+                END;
+                ds := DATASET('~noaa::ghcn::daily::2018::raw', layout, CSV);
+                ASSERT(COUNT(ds) = 32357321);
+                
+# ==================================================================================
+# Create final dataset
+# ==================================================================================
+transform:
+    ecls:
+        000_tx_daily_2018:
+            cluster: thor
+            content: |
+                raw_layout := RECORD
+                    STRING station_id; // station identifier (GHCN Daily Identification Number)
+                    STRING date; // (yyyymmdd; where yyyy=year; mm=month; and, dd=day)
+                    STRING observation_type; // (see ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for definitions)
+                    STRING observation_value; // (see ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for units)
+                    STRING observation_time; // (if available, as hhmm where hh=hour and mm=minutes in local time)
+                END;
+                final_layout := RECORD
+                    STRING station_id;
+                    UNSIGNED date;
+                    STRING observation_type;
+                    STRING observation_value;
+                    UNSIGNED observation_time;
+                END;
+                rawDS := DATASET('~noaa::ghcn::daily::2018::raw', raw_layout, CSV);
+                finalDS := PROJECT( rawDS, TRANSFORM(final_layout,
+                    SELF.date := (UNSIGNED) LEFT.date;
+                    SELF.observation_time := (UNSIGNED) LEFT.observation_time;
+                    SELF := LEFT;
+                ));
+                OUTPUT( finalDS,, '~noaa::ghcn::daily::2018::final', OVERWRITE);
+                
+# ==================================================================================
+# Create summary
+# ==================================================================================
+report:
+    ecls:
+        000_prcp_snow_2018:
+            cluster: thor
+            output: /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data_raw.csv
+            format: csvh
+            content: |
+                final_layout := RECORD
+                        STRING station_id;
+                        UNSIGNED date;
+                        STRING observation_type;
+                        STRING observation_value;
+                        UNSIGNED observation_time;
+                END;
+                ds := DATASET('~noaa::ghcn::daily::2018::final', final_layout, THOR);
+                StationIds := ['US1COCF0015','US1COCF0020','US1COCF0041','USS0006L03S','USS0006L05S'];
+                StationData := ds( station_id IN StationIds );
+                summaryDS := TABLE( StationData( observation_type IN ['PRCP','SNOW'] ), 
+                    { station_id; observation_type; UNSIGNED total := SUM(GROUP, (UNSIGNED) observation_value); UNSIGNED days := COUNT(GROUP); }, station_id, observation_type );
+                //summaryDS;
+
+                chart_layout := RECORD
+                    STRING series;
+                    DECIMAL10_2 prcp;
+                    DECIMAL10_2 snow;
+                END;
+
+                prcpDS := TABLE( summaryDS( observation_type = 'PRCP' ), { STRING series := station_id; DECIMAL10_2 prcp := AVE(GROUP, total); DECIMAL10_2 snow := 0; }, station_id );
+                snowDS := TABLE( summaryDS( observation_type = 'SNOW' ), { STRING series := station_id; DECIMAL10_2 prcp := 0; DECIMAL10_2 snow :=  AVE(GROUP, total); }, station_id );
+                allDS := prcpDS + snowDS;
+                chartData := ROLLUP(SORT( allDS, series ), LEFT.series = RIGHT.series, TRANSFORM( chart_layout,
+                    SELF.prcp := LEFT.prcp + RIGHT.prcp;
+                    SELF.snow := LEFT.snow + RIGHT.snow;
+                    SELF := LEFT;
+                ));
+                OUTPUT(chartData);
+
+chart:
+    # Simple script to extract and format what we need later on to generate an image-charts.com url.
+    # Basically we need a file where:
+    # a. first line are the X Axis labels, delimited with "|"
+    # b. second row contains the name of the series, delimited with "|"
+    # c. third row contains the series values delimited with ",", and series themselves delimited with "|"
+    # For example:
+    # Rain|Snow
+    # WeatherStation1|WeatherStation2
+    # 1,2|3,4
+    files:
+        "/var/lib/HPCCSystems/mydropzone/csv_to_chart_data.sh":
+            content: |
+                #!/bin/bash
+                file=$1
+                skip_lines=${2:-1}
+                header_line=${3:-1}
+                columns=$(sed "${header_line}q;d" $file | sed "s/\,/\|/g" | sed s/\"//g | awk 'BEGIN { FS="|"; OFS="|" }; {first = $1; $1 = ""; print $0; }' | cut -c2-)
+                tail_lines=`expr ${skip_lines} + 1`
+                series=$(tail -n +${tail_lines} $file | awk 'BEGIN { FS=","; }; { print $1 }' | tr '\n' '|' | sed s/\"//g)
+                data=$(tail -n +${tail_lines} $file | awk 'BEGIN { FS=","; OFS=","; }; { $1=""; print $0; }' | cut -c2- | sed s/\"//g | tr '\n' '|' | sed 's/.$//')
+                echo $columns
+                echo $series
+                echo $data
+    commands:
+        # We call the script we just created above to extract and format data as explained earlier.
+        000_chart_data:
+            command: bash /var/lib/HPCCSystems/mydropzone/csv_to_chart_data.sh /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data_raw.csv 2 2 > /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data.txt
+    image_charts:
+        # Now we can create the image-charts.com url to see the chart in browser for example.
+        prcp_snow_chart:
+            # convention, for each line in file:
+            # axis labels
+            # series names
+            # series data
+            data: /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data.txt
+            chs: 700x200
+            cht: bvg
+            chxt: x,y
+            chxs: 1N*s* inches,000000
+            #chxl: 0:|PRCP|SNOW
+            #chdl: 
+            #chd=a:2166,1143|2000,800
