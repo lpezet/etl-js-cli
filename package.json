@@ -1,6 +1,6 @@
 {
   "name": "@lpezet/etl-js-cli",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Command Line Interface for ETL-JS.",
   "main": "",
   "scripts": {
