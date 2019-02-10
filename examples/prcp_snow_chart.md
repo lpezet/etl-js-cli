@@ -1,6 +1,6 @@
 # Overview
 
-This very short tutorial will explain how to go from a data source on the web to visualization of a summary of some of that data.
+This more advanced tutorial will explain how to go from a data source on the web to visualization of a summary of some of that data.
 In this tutorial, you will learn:
 
 1. How to download file from a url
@@ -30,7 +30,8 @@ You do NOT need knowledge in HPCC Systems, but it might help (if anything goes w
 	3. [cert & transform](#cert-&-transform)
 	4. [report](#report)
 	5. [chart](#chart)
-4. [Troubleshooting](#troubleshooting)
+4. [Food for thoughts](#food-for-thoughts)
+5. [Troubleshooting](#troubleshooting)
 
 
 # Prerequisites
@@ -53,6 +54,35 @@ ssh hpccdemo@_IP_ADDRESS_
 
 Password is `hpccdemo`.
 
+### Configuration files
+
+We need to configure some of the mods we will be using during the ETL process. For example, when `spray`-ing files, we need to configure the url of the server to communicate with, the username and password if required, etc.
+
+Create a file locally, name it `dfuplus.ini` and paste the following in it:
+
+```
+server=http://127.0.0.1:8010
+username=hpccdemo
+password=hpccdemo
+overwrite=1
+replicate=0
+```
+
+Create another file locally, name it `eclplus.ini` and paste the following in it:
+
+```
+server=127.0.0.1
+username=hpccdemo
+password=hpccdemo
+#overwrite=1
+#replicate=0
+```
+
+Now copy those files over to your VM:
+
+```bash
+scp dfuplus.ini eclplus.ini hpccdemo@_IP_ADDRESS_:/home/hpccdemo/
+```
 
 ## ETL-JS CLI
 
@@ -154,7 +184,7 @@ etl:
     - chart
 ```
 
-It simply means it will first run the *extract* activity, then *load*, then *cert*, etc.
+It simply means it will first run the *extract* activity, the *load* activity, then *cert*, etc.
 It will finish with the *chart* activity which will create a url for us to visualize the result of that *report* activity.
 
 ## extract
@@ -376,48 +406,41 @@ After running the very last activity (*chart*), you should get a url like this o
 Just copy it and paste it in a browser.
 
 
-# Troubleshooting
+# Food for thoughts
 
-No need right? Everything went fine. But just in case...
+## Settings and VM configuration files
 
-## Done (with errors).
+One might wonder why having a separate file for settings (`settings.yml`) and creating configuration files on the VM (`dfuplus.ini` and `eclplus.ini`).
 
-When this happens, the best course of action is to check the log file `etl-js.log`.
-Either load it in your favorite editor or do something like this:
+The reason is simple: security and shareability (apparently a word...).
 
-```bash
-jq '.' etl-js.log
+It's best to keep username and password in separate files so one would commit its ETL files and NOT the `settings.yml` file. Each is then free to have different IPs for the VM, use username/password or private key instead, etc.
+
+Same is true for `dfuplus.ini` and `eclplus.ini`. We couldn't want to specify their content as part of the mod definition in our ETL file. One cluster might need replication, another may not (e.g. for testing purposes), credentials might be different, etc.
+
+If for whatever reason one would deem right to put the files `dfuplus.ini` and `eclplus.ini` as part of the ETL process, one would just need to add a new activity (say `prerequisites`) and specify it as first activity to run, like so:
+
+```yml
+etl:
+    - prerequisites
+    - extract
+    - ...
+
+prerequisites:
+    files:
+        "/home/hpccdemo/dfuplus.ini":
+            content: |
+                server=http://127.0.0.1:8010
+                username=hpccdemo
+                password=hpccdemo
+                overwrite=1
+                replicate=0
+        "/home/hpccdemo/eclplus.ini":
+            content: |
+                server=127.0.0.1
+                username=hpccdemo
+                password=hpccdemo
+extract:
+    ...
+
 ```
-
-### Error: Error: Timed out while waiting for handshake
-
-This is most likely due to the fact that the VM is not running, or IP address is wrong in your `settings.yml`.
-Make sure to follow the steps detailed in [Prerequisites](#prerequisites) section.
-
-### Error: Error: All configured authentication methods failed
-
-This error is typically due to wrong (or missing) settings for the remote executor.
-Make sure you filled out the `settings.yml` file as explained in [ETL-JS CLI](#etl-js-cli) section.
-
-
-### Error: (...) Error connecting to 127.0.0.1:8010 (...) connection failed
-
-The port *8010* is something specific to HPCC Systems. This most likely means the HPCC Systems Cluster is not up and running. SSH into the VM and start it like so:
-
-```bash
-ssh hpccdemo@_IP_ADDRESS_OF_VM_
-sudo /etc/init.d/hpcc-init start
-```
-
-You should see something like this, indicating everything is now running:
-
-> Starting mydali ...            [   OK    ]   
-> Starting mydfuserver ...       [   OK    ]   
-> Starting myeclagent ...        [   OK    ]   
-> Starting myeclccserver ...     [   OK    ]   
-> Starting myeclscheduler ...    [   OK    ]   
-> Starting myesp ...             [   OK    ]   
-> Starting myroxie ...           [   OK    ]   
-> Starting mysasha ...           [   OK    ]   
-> Starting mythor ...            [   OK    ]
-
