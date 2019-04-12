@@ -1,0 +1,31 @@
+etl:
+  - extract
+  - transform
+  - load
+  
+extract:
+  files:
+    "/tmp/abc.txt":
+      source: https://a.b.c/abc.txt
+
+transform:
+  commands:
+    000_trunc:
+      command: tail -n +2 abc.txt > abc_headless.txt
+      cwd: /tmp/
+
+load:
+  commands:
+    000_rename:
+      command: mv abc_headless.txt my_table.txt
+      cwd: /tmp/
+      
+  mysqlimports:
+    "/tmp/my_table.txt":
+      db_name: mydb
+      columns: "station_id,observation_type,total,days"
+      fields_terminated_by: ","
+      lines_terminated_by: "\\n"
+      fields_enclosed_by: '"'
+      ignore_lines: 2
+      delete: true
