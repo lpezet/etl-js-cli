@@ -30,13 +30,14 @@
   "nyc": {
     "include": "lib",
     "check-coverage": true,
-    "lines": 90,
-    "statements": 90,
-    "functions": 90,
+    "lines": 85,
+    "statements": 85,
+    "functions": 75,
     "branches": 80,
     "reporter": [
       "lcov",
-      "text-summary"
+      "text-summary",
+      "html"
     ]
   },
   "author": "Luke Pezet <lpezet@gmail.com>",
