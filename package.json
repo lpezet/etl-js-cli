@@ -44,9 +44,12 @@
   "bugs": {
     "url": "https://github.com/lpezet/etl-js-cli/issues"
   },
+  "bak": {
+    "@lpezet/etl-js": "^1.0.23"
+  },
   "homepage": "https://github.com/lpezet/etl-js-cli#readme",
   "dependencies": {
-    "@lpezet/etl-js": "^1.0.23",
+    "@lpezet/etl-js": "file:../etl-js",
     "commander": "^2.20.0",
     "winston": "^2.4.4",
     "yaml-cfn": "^0.2.0"
@@ -55,7 +58,7 @@
     "chai": "^4.2.0",
     "mocha": "^5.0.0",
     "sinon": "^4.1.6",
-    "nyc": "^13.3.0",
-    "eslint": "^5.15.0"
+    "nyc": "^14.1.0",
+    "eslint": "^6.1.0"
   }
 }
