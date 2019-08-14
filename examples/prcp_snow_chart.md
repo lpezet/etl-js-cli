@@ -128,7 +128,7 @@ mods:
 ```
 
 If you are curious, here's a bit of explanation.
-The first part defines what kind of Executor to use to run ETL. Here we want to run it all on the VM, not on your machine itself (aka host).
+The first part defines what kind of Executor to use to run ETL. Here we want to run it all on the VM, not on the host.
 
 ```yml   
 etl:
