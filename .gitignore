@@ -2,3 +2,5 @@ node_modules
 .project
 coverage
 temp
+dist
+test
