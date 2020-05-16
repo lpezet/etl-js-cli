@@ -13,7 +13,7 @@
     "release": "release-it",
     "fix": "eslint -ext .ts lib/ tests/ --fix",
     "pretest": "npm run lint",
-    "test": "nyc --reporter=html mocha --require ts-node/register --require source-map-support/register --require tests/helpers/mocha-bootstrap.js --bail --check-leaks --reporter spec \"./tests/**/*.spec.ts\"",
+    "test": "nyc --reporter=html --reporter=text-summary mocha --require ts-node/register --require source-map-support/register --require tests/helpers/mocha-bootstrap.js --bail --check-leaks --reporter spec \"./tests/**/*.spec.ts\"",
     "posttest": "nyc check-coverage",
     "docs-gen": "doctoc README.md Mods.md --github --no-title",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
@@ -42,6 +42,16 @@
       "lcov",
       "text-summary",
       "html"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "extension": [
+      ".js",
+      ".ts"
+    ],
+    "exclude": [
+      "tests/**/*"
     ]
   },
   "author": "Luke Pezet <lpezet@gmail.com>",

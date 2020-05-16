@@ -16,11 +16,15 @@ if ( Fs.existsSync( SETTINGS_FILE ) ) {
 
 export default class CLI {
   mMain: IMain;
+  mProg: program.Command;
   constructor(pMain: IMain) {
     this.mMain = pMain;
+    this.mProg = new program.Command();
   }
   init(pSettings: any): void {
-    program
+    const prog = this.mProg;
+
+    prog
       .version("1.0.0")
       .description("For manual, use man etl-js-cli")
       .option(
@@ -29,7 +33,7 @@ export default class CLI {
       )
       .option("-s, --silent", "Prevent output of results (json).");
 
-    program
+    prog
       .command("init")
       .description("Create configuration samples in current directory.")
       .option(
@@ -37,20 +41,20 @@ export default class CLI {
         "Force initilization even if existing configuration exists.",
         false
       )
-      .action(async options => {
+      .action(options => {
         options.force = options.force || false;
         // that.setThingsUp(options);
-        await this.mMain.init(options);
+        return this.mMain.init(options);
       });
 
-    program
+    prog
       .command("run <file> [etlSet]")
       // .alias('update')
       .description(
         "Run activities from file. Specify <etlSet> to run specific ETL set."
       )
       .action(
-        async (file, etlSet, options): Promise<any> => {
+        (file, etlSet, options): Promise<any> => {
           // that.setThingsUp(options);
           // console.log('#### options:');
           // console.dir( options );
@@ -65,7 +69,7 @@ export default class CLI {
           if (etlSet) {
             oParameters["etlSet"] = etlSet; // activities.split(",");
           }
-          await this.mMain.run(pSettings, oTemplate, oParameters);
+          return this.mMain.run(pSettings, oTemplate, oParameters);
 
           // winston.level = options.parent.debug;
           // closure( oHPCCCluster.create( oClusterConfig, options ) );
@@ -81,23 +85,29 @@ export default class CLI {
 				//closure( oHPCCCluster.create( oClusterConfig, options ) );
 			});
 		*/
-    program
+    prog
       .command("help")
       .description("Display help.")
       .action(
         (_options: any): Promise<any> => {
-          program.help();
+          prog.help();
+          return Promise.resolve();
         }
       );
 
-    program.command("*").action(
+    prog.command("*").action(
       (_options: any): Promise<any> => {
-        program.help();
+        prog.help();
+        return Promise.resolve();
       }
     );
   }
   run(pArgs: string[]): Promise<any> {
-    return program.parseAsync(pArgs);
+    try {
+      return this.mProg.parseAsync(pArgs);
+    } catch (err) {
+      return Promise.reject(err);
+    }
     /*
     const cmd = program.parse(pArgs);
     if (!program.args.length) {
