@@ -2,7 +2,8 @@
 # mysqlimports eample
 # ==================================================================================
 
-etl:
+etlSets:
+  default:
     - extract
     - load
 
@@ -10,25 +11,25 @@ etl:
 # Create test data
 # ==================================================================================
 extract:
-    files:
-        "/tmp/station_prcp_snow.csv":
-            content: |
-                [SomethngToIgnore]
-                "station_id","prcp","snow"
-                "US1",123,456
-                "US2",234,345
-                "US3",345,567
+  files:
+    "/tmp/station_prcp_snow.csv":
+      content: |
+        [SomethngToIgnore]
+        "station_id","prcp","snow"
+        "US1",123,456
+        "US2",234,345
+        "US3",345,567
 
 # ==================================================================================
 # Load data into MySQL DB
 # ==================================================================================
 load:
-    mysqlimports:
-        "/tmp/test.csv":
-            db_name: testdb
-            columns: "station_id,prcp,snow"
-            fields_terminated_by: ","
-            lines_terminated_by: "\\n"
-            fields_enclosed_by: '"'
-            ignore_lines: 2
-            delete: true
+  mysqlimports:
+    "/tmp/test.csv":
+      db_name: testdb
+      columns: "station_id,prcp,snow"
+      fields_terminated_by: ","
+      lines_terminated_by: "\\n"
+      fields_enclosed_by: '"'
+      ignore_lines: 2
+      delete: true
