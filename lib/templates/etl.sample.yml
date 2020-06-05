@@ -1,8 +1,6 @@
-etl:
-  - extract
-  - transform
-  - load
-  
+etlSets:
+  default: ["extract", "transform", "load"]
+
 extract:
   files:
     "/tmp/abc.txt":
@@ -19,7 +17,7 @@ load:
     000_rename:
       command: mv abc_headless.txt my_table.txt
       cwd: /tmp/
-      
+
   mysqlimports:
     "/tmp/my_table.txt":
       db_name: mydb
