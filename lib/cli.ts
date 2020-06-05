@@ -2,6 +2,7 @@ import { yamlParse } from "yaml-cfn";
 import * as Fs from "fs";
 import * as program from "commander";
 import { IMain } from "./main";
+import * as pkg from "../package.json";
 
 // import { configureLogger } from "../main/logger";
 
@@ -25,7 +26,7 @@ export default class CLI {
     const prog = this.mProg;
 
     prog
-      .version("1.0.0")
+      .version(pkg.version)
       .description("For manual, use man etl-js-cli")
       .option(
         "-l, --log-level [level]",
@@ -51,7 +52,7 @@ export default class CLI {
       .command("run <file> [etlSet]")
       // .alias('update')
       .description(
-        "Run activities from file. Specify <etlSet> to run specific ETL set."
+        'Run activities from file. Specify <etlSet> to run specific ETL set - if omitted, default is "default".'
       )
       .action(
         (file, etlSet, options): Promise<any> => {
@@ -108,12 +109,5 @@ export default class CLI {
     } catch (err) {
       return Promise.reject(err);
     }
-    /*
-    const cmd = program.parse(pArgs);
-    if (!program.args.length) {
-      program.help();
-    }
-    return cmd;
-    */
   }
 }
