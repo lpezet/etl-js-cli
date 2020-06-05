@@ -1,7 +1,19 @@
 import * as Fs from "fs";
 import * as path from "path";
 import * as util from "util";
-import { ETL, IETL, Local, Mod, Remote, createLogger } from "@lpezet/etl-js";
+import { ETL, Local, Remote, createLogger } from "@lpezet/etl-js";
+
+import {
+  CommandsMod,
+  FilesMod,
+  HPCCDespraysMod,
+  HPCCECLsMod,
+  HPCCSpraysMod,
+  ImageChartsMod,
+  InteractivesMod,
+  MySQLImportsMod,
+  MySQLsMod
+} from "@lpezet/etl-js";
 
 const LOGGER = createLogger("etljs-cli::main");
 
@@ -11,6 +23,7 @@ const LOGGER = createLogger("etljs-cli::main");
  * @param pSettings settings
  * @return Promise<Mod>
  */
+/*
 function registerMod(pETL: IETL, pMod: string, pSettings?: any): Promise<Mod> {
   return import(pMod).then(m => {
     if (m["default"]) m = m.default;
@@ -18,6 +31,7 @@ function registerMod(pETL: IETL, pMod: string, pSettings?: any): Promise<Mod> {
     return new Factory() as Mod;
   });
 }
+*/
 /*
 const register_mod = function(pETL, pMod, pSettings) {
   const Class = require(pMod);
@@ -166,6 +180,16 @@ export default class Main implements IMain {
     }
     const oETL = new ETL(oExecutor, pSettings);
 
+    new CommandsMod().register(oETL);
+    new FilesMod().register(oETL);
+    new MySQLImportsMod().register(oETL);
+    new MySQLsMod().register(oETL);
+    new HPCCDespraysMod().register(oETL);
+    new HPCCECLsMod().register(oETL);
+    new HPCCSpraysMod().register(oETL);
+    new ImageChartsMod().register(oETL);
+    new InteractivesMod().register(oETL);
+    /*
     registerMod(oETL, "@lpezet/etl-js/lib/commands");
     registerMod(oETL, "@lpezet/etl-js/lib/files");
     registerMod(oETL, "@lpezet/etl-js/lib/mysqlimports");
@@ -174,7 +198,7 @@ export default class Main implements IMain {
     registerMod(oETL, "@lpezet/etl-js/lib/hpcc-sprays");
     registerMod(oETL, "@lpezet/etl-js/lib/hpcc-desprays");
     registerMod(oETL, "@lpezet/etl-js/lib/image-charts");
-
+    */
     // var oETLActivities = pETLActivities;
     /*
           if ( pParameters['activities'] ) {
