@@ -1,0 +1,16 @@
+node_modules
+.project
+coverage
+temp
+test
+.nyc_output
+*.log
+.eslintrc.json
+mocha.opts
+.prettierrc.js
+.eslintignore
+.gitignore
+.travis.yml
+appveyor.yml
+tsconfig.json
+tsconfig.publish.json
