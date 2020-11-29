@@ -16,23 +16,20 @@ You need some knowledge of terminal, linux commands and how to set things up, in
 
 You do NOT need knowledge in HPCC Systems, but it might help (if anything goes wrong at that level).
 
-
 # Table of contents
 
-
 1. [Prerequisites](#Prerequisites)
-	1. [HPCC Systems VM](#hpcc-systems-vm)
-	2. [ETL-JS CLI](#etl-js-cli)
-	3. [ETL file](#etl-file)
+   1. [HPCC Systems VM](#hpcc-systems-vm)
+   2. [ETL-JS CLI](#etl-js-cli)
+   3. [ETL file](#etl-file)
 2. [Process](#process)
-	1. [extract](#extract)
-	2. [load](#load)
-	3. [cert & transform](#cert-&-transform)
-	4. [report](#report)
-	5. [chart](#chart)
-4. [Food for thoughts](#food-for-thoughts)
-5. [Troubleshooting](#troubleshooting)
-
+   1. [extract](#extract)
+   2. [load](#load)
+   3. [cert & transform](#cert-&-transform)
+   4. [report](#report)
+   5. [chart](#chart)
+3. [Food for thoughts](#food-for-thoughts)
+4. [Troubleshooting](#troubleshooting)
 
 # Prerequisites
 
@@ -80,14 +77,11 @@ We also need to create a table to host the data we will be importing:
 mysql -u root -p -e "CREATE TABLE station_prcp_snow (station_id VARCHAR(100) PRIMARY KEY, prcp INT UNSIGNED NOT NULL, snow INT UNSIGNED NOT NULL)"
 ```
 
-
-
 #### mysql-client
 
 ```bash
 apt-get install mysql-client -y
 ```
-
 
 ## ETL-JS CLI
 
@@ -115,32 +109,32 @@ etl-js init
 Two files will be created, but we're interested in only one: `settings.yml`.
 Paste the following in it:
 
-```yml   
+```yml
 etl:
   executor: remote1
-  
+
 executors:
   remote1:
     type: remote
     host: _IP_ADDRESS_OF_VM_
     username: hpccdemo
     password: hpccdemo
-   
+
 mods:
   mysqlimports:
-    '*':
-      host: '127.0.0.1'
-      user: 'username'
-      password: 'password'
+    "*":
+      host: "127.0.0.1"
+      user: "username"
+      password: "password"
 ```
 
 If you are curious, here's a bit of explanation.
 The first part defines what kind of Executor to use to run ETL. Here we want to run it all on the VM, not on your machine itself (aka host).
 
-```yml   
+```yml
 etl:
   executor: remote1
-  
+
 executors:
   remote1:
     type: remote
@@ -157,13 +151,11 @@ The next part is to configure one of the mod our ETL process will be using: `mys
 ```yml
 mods:
   mysqlimports:
-    '*':
-      host: '127.0.0.1'
-      user: 'username'
-      password: 'password'
+    "*":
+      host: "127.0.0.1"
+      user: "username"
+      password: "password"
 ```
-
-
 
 ## ETL file
 
@@ -180,53 +172,52 @@ BE AWARE that commands will be run on your Virtual Machine, files will be downlo
 
 Open that .yml file you just downloaded.
 
-The first part of the file is the *etl* section. This defines the activities, and order, to run.
+The first part of the file is the _etlSets_ section. Each entry define a set of activities, in order, to run.
 
 ```yml
-etl:
+etlSets:
+  default:
     - extract
     - load
 ```
 
-It simply means it will first run the *prerequisites* activity, *extract* activity, then *load*, then *cert*, etc.
-It will finish with the *chart* activity which will create a url for us to visualize the result of that *report* activity.
+By default, the _default_ etl set will be run (unless told otherwise). By default then, it simply means it will first run the _extract_ activity, then the _load_ activity.
+It will finish with the _chart_ activity which will create a url for us to visualize the result of that _report_ activity.
 
 ## extract
 
-The *extract* activity is here only to simplify the creation of test data.
+The _extract_ activity is here only to simplify the creation of test data.
 It create a `/tmp/station_prcp_snow.csv` with CSV content in it, to be loaded in our MySQL database.
 
 ```yml
 extract:
-    files:
-        "/tmp/station_prcp_snow.csv":
-            content: |
-                [SomethngToIgnore]
-                "station_id","prcp","snow"
-                "US1",123,456
-                "US2",234,345
-                "US3",345,567
+  files:
+    "/tmp/station_prcp_snow.csv":
+      content: |
+        [SomethngToIgnore]
+        "station_id","prcp","snow"
+        "US1",123,456
+        "US2",234,345
+        "US3",345,567
 ```
 
 As we will see in a minute, we can easily ignore those first 2 lines when importing its content.
 
-
 ## load
 
-The *load* activity simply loads the data we just extracted, into HPCC Systems Thor.
-
+The _load_ activity simply loads the data we just extracted, into HPCC Systems Thor.
 
 ```yml
 load:
-    mysqlimports:
-        "/tmp/test.csv":
-            db_name: testdb
-            columns: "station_id,prcp,snow"
-            fields_terminated_by: ","
-            lines_terminated_by: "\\n"
-            fields_enclosed_by: '"'
-            ignore_lines: 2
-            delete: true
+  mysqlimports:
+    "/tmp/test.csv":
+      db_name: testdb
+      columns: "station_id,prcp,snow"
+      fields_terminated_by: ","
+      lines_terminated_by: "\\n"
+      fields_enclosed_by: '"'
+      ignore_lines: 2
+      delete: true
 ```
 
 This loads the file specified in `sourcePath` and create a logical file `noaa::ghcn::daily::2018::raw` in Thor.
@@ -245,7 +236,7 @@ etl-js run mysqlimports.yml
 ```
 
 To run only certain activities at a time, add the name of activity at the end of the previous command, and if you want to run more than one activity, separate those by a comma (",").
-For the very first run, it might be best to go about it step by step: first run the *extrat* activity (can check the file created and its content), then the *load* activity.
+For the very first run, it might be best to go about it step by step: first run the _extrat_ activity (can check the file created and its content), then the _load_ activity.
 
 ```bash
 etl-js run prcp_snow_chart.yml extract
@@ -253,13 +244,10 @@ etl-js run prcp_snow_chart.yml extract
 etl-js run prcp_snow_chart.yml load
 ```
 
-You can connect to your database now and check the content of the 
-
+You can connect to your database now and check the content of the
 
 # Food for thoughts
 
 ## Table name is not an option
 
-Since `mysqlimports` mod simply leverages the `mysqlimport` command line software, there's no way to specify the name of the table (as of right now) through options. The name of the file MUST match the name of the table in the database (here it's *station_prcp_snow*).
-
-
+Since `mysqlimports` mod simply leverages the `mysqlimport` command line software, there's no way to specify the name of the table (as of right now) through options. The name of the file MUST match the name of the table in the database (here it's _station_prcp_snow_).
