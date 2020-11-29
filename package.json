@@ -19,7 +19,7 @@
     "docs-gen": "doctoc README.md Mods.md --github --no-title",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "prepare_off": "./node_modules/marked-man/bin/marked-man --version v1.0.0 --manual 'ETL-JS CLI' ./man/Manual.md > ./man/etl-js-cli.1",
-    "prepare": "npm run dist"
+    "prepare": "npm run dist && rm -f dist/package.json"
   },
   "repository": {
     "type": "git",
@@ -29,9 +29,7 @@
     "etl"
   ],
   "files": [
-    "LICENSE",
-    "README.md",
-    "dist/"
+    "dist/**/*"
   ],
   "nyc": {
     "include": "lib",
