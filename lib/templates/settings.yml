@@ -1,7 +1,6 @@
-   
 etl:
   executor: remote1
-  
+
 executors:
   local1:
     type: local
@@ -12,16 +11,16 @@ executors:
     username: username
     password: password
     privateKey: /path/to/key
-   
+
 mods:
-  sprays:
+  hpcc-sprays:
     "specific::key":
-      server: '192.168.99.100'
-    '*':
-      server: '127.0.0.1'
-    
+      server: "192.168.99.100"
+    "*":
+      server: "127.0.0.1"
+
   mysqlimports:
-    '*':
-      host: '127.0.0.1'
-      user: 'username'
-      password: 'password'
+    "*":
+      host: "127.0.0.1"
+      user: "username"
+      password: "password"

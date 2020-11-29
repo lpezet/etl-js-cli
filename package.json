@@ -1,19 +1,24 @@
 {
   "name": "@lpezet/etl-js-cli",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Command Line Interface for ETL-JS.",
   "main": "",
+  "bin": "dist/bin/etl-js.bin.js",
   "scripts": {
-    "prepare_off": "./node_modules/marked-man/bin/marked-man --version v1.0.0 --manual 'ETL-JS CLI' ./man/Manual.md > ./man/etl-js-cli.1",
-    "lint": "eslint lib/ tests/",
-    "fix": "eslint lib/ tests/ --fix",
+    "copy-templates": "[ ! -d dist/lib/templates ] && mkdir -p dist/lib/templates; cp -r lib/templates/ dist/lib/templates/",
+    "dist": "npm run clean && npm run tsc -- --build tsconfig.publish.json && npm run copy-templates && chmod +x dist/bin/etl-js.bin.js",
+    "tsc": "tsc",
+    "clean": "rimraf dist",
+    "lint": "eslint --ext .ts lib/ tests/",
+    "mocha-single": "nyc --reporter=html mocha --require ts-node/register --require source-map-support/register --require tests/helpers/mocha-bootstrap.js --timeout=1000",
+    "release": "release-it",
+    "fix": "eslint -ext .ts lib/ tests/ --fix",
     "pretest": "npm run lint",
-    "test": "nyc mocha --bail --check-leaks --reporter spec \"./tests/**/*-test.js\"",
+    "test": "nyc --reporter=html --reporter=text-summary mocha --require ts-node/register --require source-map-support/register --require tests/helpers/mocha-bootstrap.js --bail --check-leaks --reporter spec \"./tests/**/*.spec.ts\"",
     "posttest": "nyc check-coverage",
-    "integration-test": "mocha ./integration-tests/*-test.js",
     "docs-gen": "doctoc README.md Mods.md --github --no-title",
-    "test-watch": "mocha --watch --reporter=spec",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "prepare_off": "./node_modules/marked-man/bin/marked-man --version v1.0.0 --manual 'ETL-JS CLI' ./man/Manual.md > ./man/etl-js-cli.1"
   },
   "repository": {
     "type": "git",
@@ -25,7 +30,7 @@
   "files": [
     "LICENSE",
     "README.md",
-    "lib/"
+    "dist/"
   ],
   "nyc": {
     "include": "lib",
@@ -38,6 +43,16 @@
       "lcov",
       "text-summary",
       "html"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "extension": [
+      ".js",
+      ".ts"
+    ],
+    "exclude": [
+      "tests/**/*"
     ]
   },
   "author": "Luke Pezet <lpezet@gmail.com>",
@@ -46,19 +61,43 @@
     "url": "https://github.com/lpezet/etl-js-cli/issues"
   },
   "bak": {
-    "@lpezet/etl-js": "file:../etl-js"
+    "@lpezet/etl-js": "^1.2.0"
   },
   "homepage": "https://github.com/lpezet/etl-js-cli#readme",
   "dependencies": {
-    "@lpezet/etl-js": "^1.2.0",
-    "commander": "^2.20.0",
+    "@lpezet/etl-js": "^2.0.0",
+    "commander": "^5.1.0",
+    "lodash": "^4.17.19",
+    "log4js": "^6.1.2",
     "winston": "^2.4.4",
-    "yaml-cfn": "^0.2.0"
+    "yaml-cfn": "^0.2.3"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.6",
+    "@types/chai-as-promised": "^7.1.0",
+    "@types/jest": "^25.2.2",
+    "@types/lodash": "^4.14.149",
+    "@types/node": "^10.17.17",
+    "@types/sinon": "^5.0.5",
+    "@types/sinon-chai": "^3.2.2",
+    "@types/ssh2": "^0.5.43",
+    "@typescript-eslint/eslint-plugin": "~2.31.0",
+    "@typescript-eslint/parser": "~2.3.0",
     "chai": "^4.2.0",
-    "mocha": "^5.0.0",
-    "nyc": "^14.1.0",
-    "eslint": "^6.1.0"
+    "chai-as-promised": "^7.1.1",
+    "chai-spies": "^1.0.0",
+    "eslint": "^6.8.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-jsdoc": "^22.1.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.9.2",
+    "rimraf": "^3.0.2",
+    "sinon": "^6.3.4",
+    "sinon-chai": "^3.2.0",
+    "mocha": "^7.1.2",
+    "nyc": "^14.1.1",
+    "prettier": "^1.19.0"
   }
 }
