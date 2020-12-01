@@ -8,11 +8,66 @@ Extract, Transform, and Load sharable and repeatable from command line.
 [![Test Coverage][coveralls-image]][coveralls-url]
 [![Known Vulnerabilities][vulnerabilities-image]][vulnerabilities-url]
 
+```bash
+mkdir my-etl && cd my-etl
+# Initialize
+etl-js init
+# Use local executor
+sed -i "s/executor: remote1/executor: local1/" settings.yml
+# Create a simple template downloading Orion nebula from NASA site
+echo -e "etlSets:\n default:\n  - step1\nstep1:\n files:\n  /tmp/orion-nebula.jpg:\n   source: https://www.nasa.gov/sites/default/files/thumbnails/image/orion-nebula-xlarge_web.jpg" > download_orion_nebula.yml
+# Run template
+etl-js run download_orion_nebula.yml
+```
+
+The image is downloaded locally to ``/tmp/orion-nebula.jpg``.
+
+# Table of Contents
+
 # Installation
 
 ```bash
 npm install --global @lpezet/etl-js-cli
 ```
+
+# Features
+
+* Template-based process using YML to express steps and activities as part of ETL
+* Built-in modules to leverage already installed software (e.g. mysql, mysqlimport, etc.)
+* Dynamic behavior through the use of *tags* in activities.
+
+# Concept
+
+This command line tool lets you tap into the power of [ETL-JS](https://github.com/lpezet/etl-js).
+The idea is to be able to share and easily repeat activities, and leverage existing tools as much as possible.
+
+Steps and activities are basically specified in YML like so:
+
+```yml
+etlSets:
+ default:
+  - activity1
+  - activity2
+ somethingelse:
+  - activity3
+
+activity1:
+ commands:
+  my_command:
+   command: echo "Hello..."
+
+activity2:
+ commands:
+  something:
+   command: echo "World!"
+
+activity3:
+ commands:
+  bye_bye:
+   command: echo "Bye bye!"
+```
+
+For more details, have a look at [ETL-JS](https://github.com/lpezet/etl-js).
 
 # Examples/Tutorials
 
