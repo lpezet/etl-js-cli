@@ -16,7 +16,7 @@
     "pretest": "npm run lint",
     "test": "nyc --reporter=html --reporter=text-summary mocha --require ts-node/register --require source-map-support/register --require tests/helpers/mocha-bootstrap.js --bail --check-leaks --reporter spec \"./tests/**/*.spec.ts\"",
     "posttest": "nyc check-coverage",
-    "docs-gen": "doctoc README.md Mods.md --github --no-title",
+    "docs-gen": "doctoc README.md --github --no-title",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "prepare_off": "./node_modules/marked-man/bin/marked-man --version v1.0.0 --manual 'ETL-JS CLI' ./man/Manual.md > ./man/etl-js-cli.1",
     "prepare": "npm run dist"
@@ -86,6 +86,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
+    "doctoc": "^1.4.0",
     "eslint": "^6.8.0",
     "eslint-config-google": "^0.14.0",
     "eslint-config-prettier": "^6.10.0",
