@@ -1,5 +1,5 @@
 etl:
-  executor: remote1
+  executor: local1
 
 executors:
   local1:
