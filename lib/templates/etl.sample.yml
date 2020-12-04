@@ -14,11 +14,11 @@ world:
 envTest:
   commands:
     with_env:
-      command: 'echo "The value for env variable ''TESTENV'': ${env.TESTENV}"'
+      command: 'echo "The value for env variable ''TESTENV'': {{env.TESTENV}}"'
 varTest:
   commands:
     001_create_var:
       command: printf "hello"
       var: TESTVAR
     002_use_var:
-      command: 'echo "The value for var TESTVAR: {{var.TESTVAR}}"'
+      command: 'echo "The value for var TESTVAR: {{vars.TESTVAR}}"'
