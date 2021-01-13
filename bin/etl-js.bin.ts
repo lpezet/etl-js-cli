@@ -11,7 +11,8 @@ import { configureLogger } from "@lpezet/etl-js";
 
 const args = process.argv.slice(2);
 
-const logFilename = path.join(path.resolve(__dirname, "../../"), "etl-js.log");
+const logFilename = path.join(path.resolve("./"), "etl-js.log");
+//const logFilename = path.join(path.resolve(__dirname, "../../"), "etl-js.log");
 // const logFilename = path.join("/var/log/", "/cue-me-in.log");
 
 const debugging = _.includes(args, "--debug");
