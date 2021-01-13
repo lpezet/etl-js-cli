@@ -105,6 +105,6 @@ Examples and tutorials can be found [here](examples/README.md).
 To publish next version of `etl-js-cli`, run the following:
 
 ```bash
-npm run prepare
+npm run dist
 npm publish dist/ --access public
 ```
