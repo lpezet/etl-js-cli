@@ -31,8 +31,13 @@ The image is downloaded locally to ``/tmp/orion-nebula.jpg``.
 - [Installation](#installation)
 - [Features](#features)
 - [Concept](#concept)
+- [Getting started](#getting-started)
+  - [First run](#first-run)
+  - [Environment variables](#environment-variables)
+  - [Variables](#variables)
 - [Examples/Tutorials](#examplestutorials)
 - [License](#license)
+- [Publishing](#publishing)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
