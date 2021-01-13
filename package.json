@@ -1,9 +1,11 @@
 {
   "name": "@lpezet/etl-js-cli",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Command Line Interface for ETL-JS.",
   "main": "",
-  "bin": "dist/bin/etl-js.bin.js",
+  "bin": {
+    "etl-js": "dist/bin/etl-js.bin.js"
+  },
   "scripts": {
     "copy-templates": "[ ! -d dist/lib/templates ] && mkdir -p dist/lib/templates; cp -r lib/templates/* dist/lib/templates/",
     "dist": "npm run clean && npm run tsc -- --build tsconfig.publish.json && npm run copy-templates && chmod +x dist/bin/etl-js.bin.js",
