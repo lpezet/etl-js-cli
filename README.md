@@ -99,3 +99,12 @@ Examples and tutorials can be found [here](examples/README.md).
 [appveyor-url]: https://ci.appveyor.com/project/lpezet/etl-js-cli
 [vulnerabilities-image]: https://snyk.io/test/github/lpezet/etl-js-cli/badge.svg
 [vulnerabilities-url]: https://snyk.io/test/github/lpezet/etl-js-cli
+
+# Publishing
+
+To publish next version of `etl-js-cli`, run the following:
+
+```bash
+npm run prepare
+npm publish dist/ --access public
+```

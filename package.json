@@ -1,10 +1,10 @@
 {
   "name": "@lpezet/etl-js-cli",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Command Line Interface for ETL-JS.",
   "main": "",
   "bin": {
-    "etl-js": "dist/bin/etl-js.bin.js"
+    "etl-js": "bin/etl-js.bin.js"
   },
   "scripts": {
     "copy-templates": "[ ! -d dist/lib/templates ] && mkdir -p dist/lib/templates; cp -r lib/templates/* dist/lib/templates/",
@@ -35,8 +35,7 @@
     "lib/**/*.d.ts",
     "bin/*.js",
     "bin/*.d.ts",
-    "lib/templates/*",
-    "dist/**/*.js"
+    "lib/templates/*"
   ],
   "nyc": {
     "include": "lib",
