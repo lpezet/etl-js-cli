@@ -35,7 +35,8 @@
     "lib/**/*.d.ts",
     "bin/*.js",
     "bin/*.d.ts",
-    "lib/templates/*"
+    "lib/templates/*",
+    "dist/**/*.js"
   ],
   "nyc": {
     "include": "lib",
