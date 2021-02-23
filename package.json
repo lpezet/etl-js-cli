@@ -69,7 +69,7 @@
   "dependencies": {
     "@lpezet/etl-js": "^2.0.0",
     "commander": "^5.1.0",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "log4js": "^6.1.2",
     "winston": "^2.4.4",
     "yaml-cfn": "^0.2.3"
