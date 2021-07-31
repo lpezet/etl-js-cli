@@ -4,7 +4,7 @@
   "description": "Command Line Interface for ETL-JS.",
   "main": "",
   "bin": {
-    "etl-js": "dist/bin/etl-js.bin.js"
+    "etl-js": "bin/etl-js.bin.js"
   },
   "scripts": {
     "copy-templates": "[ ! -d dist/lib/templates ] && mkdir -p dist/lib/templates; cp -r lib/templates/* dist/lib/templates/",
