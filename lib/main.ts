@@ -56,7 +56,7 @@ export default class Main implements IMain {
   _createFile(
     pOutputFilename: string,
     pTemplateFilename: string
-  ): Promise<any> {
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         const oResolvedTemplateFilename = path.resolve(
@@ -100,7 +100,7 @@ export default class Main implements IMain {
       }
     });
   }
-  init(pParameters: any): Promise<any> {
+  init(pParameters: any): Promise<void> {
     return new Promise((resolve, reject) => {
       const oSettintgsFile = path.resolve(process.cwd(), "settings.yml");
       if (Fs.existsSync(oSettintgsFile) && !pParameters.force) {
@@ -153,7 +153,7 @@ export default class Main implements IMain {
     }
     return true;
   }
-  run(pSettings: any, pETLTemplate: any, pParameters: any): Promise<any> {
+  run(pSettings: any, pETLTemplate: any, pParameters: any): Promise<void> {
     if (!this._validSettings(pSettings)) {
       return Promise.reject(new Error("Invalid settings."));
     }
@@ -213,7 +213,7 @@ export default class Main implements IMain {
           */
     LOGGER.info("Running ETL...");
     return new Promise(function(resolve, reject) {
-      oETL.process(pETLTemplate, pParameters).then(
+      oETL.processTemplate(pETLTemplate, pParameters).then(
         function(pResults) {
           LOGGER.info("Done running ETL.");
           if (!pParameters["silent"]) console.dir(pResults, { depth: null });
