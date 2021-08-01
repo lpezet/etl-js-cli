@@ -100,6 +100,31 @@ describe("main", function() {
     );
   });
 
+  it("runLocalSilent", function(done) {
+    const oSettings = {
+      etl: { executor: "local1" },
+      executors: { local1: { type: "local" } }
+    };
+    const oETLActivities = { etl: {} };
+    const oParameters = { silent: true };
+    const oTested = new Main();
+    oTested.init({}).then(
+      function() {
+        oTested.run(oSettings, oETLActivities, oParameters).then(
+          function() {
+            done();
+          },
+          function(pError: Error) {
+            done(pError);
+          }
+        );
+      },
+      function(pError: Error) {
+        done(pError);
+      }
+    );
+  });
+
   it("runRemote", function(done) {
     const oSettings = {
       etl: { executor: "remote1" },
@@ -163,5 +188,38 @@ describe("main", function() {
         done();
       }
     );
+  });
+
+  it("invalidSettingsMissingExecutor", function(done) {
+    const oInvalidSettings = { executors: {}, etl: { executor: "missing" } };
+    const oETLActivities = { etl: {} };
+    const oParameters = {};
+    const oTested = new Main();
+    oTested.run(oInvalidSettings, oETLActivities, oParameters).then(
+      function() {
+        done("Expected error.");
+      },
+      function() {
+        done();
+      }
+    );
+  });
+
+  it("handleErrorReject", function(done) {
+    let rejected = false;
+    const oTested = new Main();
+    oTested._handleError(new Error("Error for testing purposes."), _err => {
+      rejected = true;
+    });
+    if (rejected) {
+      done();
+    } else {
+      done(new Error("Must call function when passing it to _handleError()."));
+    }
+  });
+
+  it("handleError", function() {
+    const oTested = new Main();
+    oTested._handleError(new Error("Error for testing purposes."));
   });
 });

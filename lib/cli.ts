@@ -55,7 +55,7 @@ export default class CLI {
         'Run activities from file. Specify <etlSet> to run specific ETL set - if omitted, default is "default".'
       )
       .action(
-        (file, etlSet, options): Promise<any> => {
+        (file, etlSet, options): Promise<void> => {
           // that.setThingsUp(options);
           // console.log('#### options:');
           // console.dir( options );
@@ -90,20 +90,20 @@ export default class CLI {
       .command("help")
       .description("Display help.")
       .action(
-        (_options: any): Promise<any> => {
+        (_options: any): Promise<void> => {
           prog.help();
           return Promise.resolve();
         }
       );
 
     prog.command("*").action(
-      (_options: any): Promise<any> => {
+      (_options: any): Promise<void> => {
         prog.help();
         return Promise.resolve();
       }
     );
   }
-  run(pArgs: string[]): Promise<any> {
+  run(pArgs: string[]): Promise<program.Command> {
     try {
       return this.mProg.parseAsync(pArgs);
     } catch (err) {

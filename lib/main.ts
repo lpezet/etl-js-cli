@@ -49,7 +49,7 @@ export default class Main implements IMain {
   constructor() {
     // nop
   }
-  _handleError(pError: Error, pReject: Function): void {
+  _handleError(pError: Error, pReject?: (err: Error) => void): void {
     LOGGER.error("Unexpected error.", pError);
     if (pReject) pReject(pError);
   }
