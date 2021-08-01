@@ -213,17 +213,17 @@ export default class Main implements IMain {
           */
     LOGGER.info("Running ETL...");
     return new Promise(function(resolve, reject) {
-      oETL.processTemplate(pETLTemplate, pParameters).then(
-        function(pResults) {
+      oETL
+        .processTemplate(pETLTemplate, pParameters)
+        .then(function(pResults) {
           LOGGER.info("Done running ETL.");
           if (!pParameters["silent"]) console.dir(pResults, { depth: null });
           resolve();
-        },
-        function(pError) {
+        })
+        .catch((pError: Error) => {
           LOGGER.error("Error running ETL.", pError);
           reject(pError);
-        }
-      );
+        });
     });
   }
 }
