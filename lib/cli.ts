@@ -18,9 +18,9 @@ if ( Fs.existsSync( SETTINGS_FILE ) ) {
 export default class CLI {
   mMain: IMain;
   mProg: program.Command;
-  constructor(pMain: IMain) {
+  constructor(pMain: IMain, pProg?: program.Command) {
     this.mMain = pMain;
-    this.mProg = new program.Command();
+    this.mProg = pProg ? pProg : new program.Command();
   }
   init(pSettings: any): void {
     const prog = this.mProg;

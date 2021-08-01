@@ -2,6 +2,7 @@ import CLI from "../lib/cli";
 import { assert } from "chai";
 import * as path from "path";
 import { IMain } from "../lib/main";
+import { program } from "commander";
 
 describe("cli", function() {
   beforeEach(function(done: Function) {
@@ -221,5 +222,67 @@ describe("cli", function() {
         done(pError);
       }
     );
+  });
+
+  it("runHelpExplicit", function(done) {
+    let oMainCalled = false;
+    let oHelpCalled = false;
+    class MainClass implements IMain {
+      run(): Promise<any> {
+        oMainCalled = true;
+        return Promise.resolve();
+      }
+      init(): Promise<any> {
+        return Promise.resolve();
+      }
+    }
+    const oProg = new program.Command();
+    oProg.help = function() {
+      oHelpCalled = true;
+      return;
+    };
+    const oTested = new CLI(new MainClass(), oProg);
+    oTested.init({});
+    oTested
+      .run(["/usr/local/bin/node", "etl-js", "help"])
+      .then(function() {
+        assert.isFalse(oMainCalled);
+        assert.isTrue(oHelpCalled);
+        done();
+      })
+      .catch((err: Error) => {
+        done(err);
+      });
+  });
+
+  it("runHelpImplicit", function(done) {
+    let oMainCalled = false;
+    let oHelpCalled = false;
+    class MainClass implements IMain {
+      run(): Promise<any> {
+        oMainCalled = true;
+        return Promise.resolve();
+      }
+      init(): Promise<any> {
+        return Promise.resolve();
+      }
+    }
+    const oProg = new program.Command();
+    oProg.help = function() {
+      oHelpCalled = true;
+      return;
+    };
+    const oTested = new CLI(new MainClass(), oProg);
+    oTested.init({});
+    oTested
+      .run(["/usr/local/bin/node", "etl-js", "somethingthatdoesnotexist"])
+      .then(function() {
+        assert.isFalse(oMainCalled);
+        assert.isTrue(oHelpCalled);
+        done();
+      })
+      .catch((err: Error) => {
+        done(err);
+      });
   });
 });
