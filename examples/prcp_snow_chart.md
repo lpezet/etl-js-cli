@@ -16,23 +16,20 @@ You need some knowledge of terminal, linux commands and how to set things up, in
 
 You do NOT need knowledge in HPCC Systems, but it might help (if anything goes wrong at that level).
 
-
 # Table of contents
 
-
 1. [Prerequisites](#Prerequisites)
-	1. [HPCC Systems VM](#hpcc-systems-vm)
-	2. [ETL-JS CLI](#etl-js-cli)
-	3. [ETL file](#etl-file)
+   1. [HPCC Systems VM](#hpcc-systems-vm)
+   2. [ETL-JS CLI](#etl-js-cli)
+   3. [ETL file](#etl-file)
 2. [Process](#process)
-	1. [extract](#extract)
-	2. [load](#load)
-	3. [cert & transform](#cert-&-transform)
-	4. [report](#report)
-	5. [chart](#chart)
-4. [Food for thoughts](#food-for-thoughts)
-5. [Troubleshooting](#troubleshooting)
-
+   1. [extract](#extract)
+   2. [load](#load)
+   3. [cert & transform](#cert-&-transform)
+   4. [report](#report)
+   5. [chart](#chart)
+3. [Food for thoughts](#food-for-thoughts)
+4. [Troubleshooting](#troubleshooting)
 
 # Prerequisites
 
@@ -110,30 +107,30 @@ etl-js init
 Two files will be created, but we're interested in only one: `settings.yml`.
 Paste the following in it:
 
-```yml   
+```yml
 etl:
   executor: remote1
-  
+
 executors:
   remote1:
     type: remote
     host: _IP_ADDRESS_OF_VM_
     username: hpccdemo
     password: hpccdemo
-   
+
 mods:
   sprays:
-    '*':
-      server: '127.0.0.1'
+    "*":
+      server: "127.0.0.1"
 ```
 
 If you are curious, here's a bit of explanation.
 The first part defines what kind of Executor to use to run ETL. Here we want to run it all on the VM, not on the host.
 
-```yml   
+```yml
 etl:
   executor: remote1
-  
+
 executors:
   remote1:
     type: remote
@@ -150,12 +147,11 @@ Sprays is a special mod for HPCC Systems. It leverages a tool to load content of
 ```yml
 mods:
   sprays:
-    '*':
-      server: '127.0.0.1'
+    "*":
+      server: "127.0.0.1"
 ```
 
 This simply states the tool need to contact the server at `127.0.0.1` (being the local host on that VM).
-
 
 ## ETL file
 
@@ -172,10 +168,11 @@ BE AWARE that commands will be run on your Virtual Machine, files will be downlo
 
 Open that .yml file you just downloaded.
 
-The first part of the file is the *etl* section. This defines the activities, and order, to run.
+The first part of the file is the _etl_ section. This defines the activities, and order, to run.
 
 ```yml
-etl:
+etlSets:
+  default:
     - extract
     - load
     - cert
@@ -184,46 +181,44 @@ etl:
     - chart
 ```
 
-It simply means it will first run the *extract* activity, the *load* activity, then *cert*, etc.
-It will finish with the *chart* activity which will create a url for us to visualize the result of that *report* activity.
+It simply means it will first run the _extract_ activity, the _load_ activity, then _cert_, etc.
+It will finish with the _chart_ activity which will create a url for us to visualize the result of that _report_ activity.
 
 ## extract
 
-
-The *extract* activity does two things:
+The _extract_ activity does two things:
 
 1. Download a file from an ftp site
 2. Extract the content of that file it just downloaded.
 
 ```yml
 extract:
-    files:
-        "/var/lib/HPCCSystems/mydropzone/noaa/ghcn/daily/by_year/2018.csv.gz":
-            source: ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/2018.csv.gz
-    commands:
-        001_unzip:
-            command: gunzip 2018.csv.gz
-            cwd: /var/lib/HPCCSystems/mydropzone/noaa/ghcn/daily/by_year/
-            test: "[ -f /var/lib/HPCCSystems/mydropzone/noaa/ghcn/daily/by_year/2018.csv.gz ]"
+  files:
+    "/var/lib/HPCCSystems/mydropzone/noaa/ghcn/daily/by_year/2018.csv.gz":
+      source: ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/2018.csv.gz
+  commands:
+    001_unzip:
+      command: gunzip 2018.csv.gz
+      cwd: /var/lib/HPCCSystems/mydropzone/noaa/ghcn/daily/by_year/
+      test: "[ -f /var/lib/HPCCSystems/mydropzone/noaa/ghcn/daily/by_year/2018.csv.gz ]"
 ```
 
 Couple of things to mention here:
 
-* There's a _test_ in the `001_unzip` command. The command itself won't be executed if that test fails. Here it simply means it won't extract the content if the file doesn't exist.
-* We use a _cwd_ to change directory prior to executing the `command:`.
+- There's a _test_ in the `001_unzip` command. The command itself won't be executed if that test fails. Here it simply means it won't extract the content if the file doesn't exist.
+- We use a _cwd_ to change directory prior to executing the `command:`.
 
 ## load
 
-The *load* activity simply loads the data we just extracted, into HPCC Systems Thor.
-
+The _load_ activity simply loads the data we just extracted, into HPCC Systems Thor.
 
 ```yml
 load:
-    sprays:
-        "noaa::ghcn::daily::2018::raw":
-            format: csv
-            destinationGroup: "mythor"
-            sourcePath: /var/lib/HPCCSystems/mydropzone/noaa/ghcn/daily/by_year/2018.csv
+  sprays:
+    "noaa::ghcn::daily::2018::raw":
+      format: csv
+      destinationGroup: "mythor"
+      sourcePath: /var/lib/HPCCSystems/mydropzone/noaa/ghcn/daily/by_year/2018.csv
 ```
 
 This loads the file specified in `sourcePath` and create a logical file `noaa::ghcn::daily::2018::raw` in Thor.
@@ -236,44 +231,44 @@ Those two activities execute ECL code against our Thor cluster.
 
 ```yml
 cert:
-    ecls:
-        000_cert_daily_2018:
-            cluster: thor
-            content: |
-                layout := RECORD
-                    STRING station_id; // station identifier (GHCN Daily Identification Number)
-                    STRING date; // (yyyymmdd; where yyyy=year; mm=month; and, dd=day)
-                    STRING observation_type; // (see ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for definitions)
-                    STRING observation_value; // (see ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for units)
-                    STRING observation_time; // (if available, as hhmm where hh=hour and mm=minutes in local time)
-                END;
-                ds := DATASET('~noaa::ghcn::daily::2018::raw', layout, CSV);
-                ASSERT(COUNT(ds) = 32357321);
+  ecls:
+    000_cert_daily_2018:
+      cluster: thor
+      content: |
+        layout := RECORD
+            STRING station_id; // station identifier (GHCN Daily Identification Number)
+            STRING date; // (yyyymmdd; where yyyy=year; mm=month; and, dd=day)
+            STRING observation_type; // (see ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for definitions)
+            STRING observation_value; // (see ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for units)
+            STRING observation_time; // (if available, as hhmm where hh=hour and mm=minutes in local time)
+        END;
+        ds := DATASET('~noaa::ghcn::daily::2018::raw', layout, CSV);
+        ASSERT(COUNT(ds) = 32357321);
 transform:
-    ecls:
-        000_tx_daily_2018:
-            content: |
-                raw_layout := RECORD
-                    STRING station_id; // station identifier (GHCN Daily Identification Number)
-                    STRING date; // (yyyymmdd; where yyyy=year; mm=month; and, dd=day)
-                    STRING observation_type; // (see ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for definitions)
-                    STRING observation_value; // (see ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for units)
-                    STRING observation_time; // (if available, as hhmm where hh=hour and mm=minutes in local time)
-                END;
-                final_layout := RECORD
-                    STRING station_id;
-                    UNSIGNED date;
-                    STRING observation_type;
-                    STRING observation_value;
-                    UNSIGNED observation_time;
-                END;
-                rawDS := DATASET('~noaa::ghcn::daily::2018::raw', raw_layout, CSV);
-                finalDS := PROJECT( rawDS, TRANSFORM(final_layout,
-                    SELF.date := (UNSIGNED) LEFT.date;
-                    SELF.observation_time := (UNSIGNED) LEFT.observation_time;
-                    SELF := LEFT;
-                ));
-                OUTPUT( finalDS,, '~noaa::ghcn::daily::2018::final', OVERWRITE);
+  ecls:
+    000_tx_daily_2018:
+      content: |
+        raw_layout := RECORD
+            STRING station_id; // station identifier (GHCN Daily Identification Number)
+            STRING date; // (yyyymmdd; where yyyy=year; mm=month; and, dd=day)
+            STRING observation_type; // (see ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for definitions)
+            STRING observation_value; // (see ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for units)
+            STRING observation_time; // (if available, as hhmm where hh=hour and mm=minutes in local time)
+        END;
+        final_layout := RECORD
+            STRING station_id;
+            UNSIGNED date;
+            STRING observation_type;
+            STRING observation_value;
+            UNSIGNED observation_time;
+        END;
+        rawDS := DATASET('~noaa::ghcn::daily::2018::raw', raw_layout, CSV);
+        finalDS := PROJECT( rawDS, TRANSFORM(final_layout,
+            SELF.date := (UNSIGNED) LEFT.date;
+            SELF.observation_time := (UNSIGNED) LEFT.observation_time;
+            SELF := LEFT;
+        ));
+        OUTPUT( finalDS,, '~noaa::ghcn::daily::2018::final', OVERWRITE);
 ```
 
 The first activity fails if the data loaded doesn't contain the number of records we're expecting. This is a simple check and, in a production-like situation, would definitely not be enough.
@@ -286,43 +281,43 @@ This activity is very similar the the previous two (cert and transform). Its dif
 
 ```yml
 report:
-    ecls:
-        000_prcp_snow_2018:
-            cluster: thor
-            output: /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data_raw.csv
-            format: csvh
-            content: |
-                // 1) Create summary
-                final_layout := RECORD
-                        STRING station_id;
-                        UNSIGNED date;
-                        STRING observation_type;
-                        STRING observation_value;
-                        UNSIGNED observation_time;
-                END;
-                ds := DATASET('~noaa::ghcn::daily::2018::final', final_layout, THOR);
-                StationIds := ['US1COCF0015','US1COCF0020','US1COCF0041','USS0006L03S','USS0006L05S'];
-                StationData := ds( station_id IN StationIds );
-                summaryDS := TABLE( StationData( observation_type IN ['PRCP','SNOW'] ), 
-                    { station_id; observation_type; UNSIGNED total := SUM(GROUP, (UNSIGNED) observation_value); UNSIGNED days := COUNT(GROUP); }, station_id, observation_type );
-                //summaryDS;
-                
-                // 2) Format data for chart
-                chart_layout := RECORD
-                    STRING series;
-                    DECIMAL10_2 prcp;
-                    DECIMAL10_2 snow;
-                END;
+  ecls:
+    000_prcp_snow_2018:
+      cluster: thor
+      output: /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data_raw.csv
+      format: csvh
+      content: |
+        // 1) Create summary
+        final_layout := RECORD
+                STRING station_id;
+                UNSIGNED date;
+                STRING observation_type;
+                STRING observation_value;
+                UNSIGNED observation_time;
+        END;
+        ds := DATASET('~noaa::ghcn::daily::2018::final', final_layout, THOR);
+        StationIds := ['US1COCF0015','US1COCF0020','US1COCF0041','USS0006L03S','USS0006L05S'];
+        StationData := ds( station_id IN StationIds );
+        summaryDS := TABLE( StationData( observation_type IN ['PRCP','SNOW'] ), 
+            { station_id; observation_type; UNSIGNED total := SUM(GROUP, (UNSIGNED) observation_value); UNSIGNED days := COUNT(GROUP); }, station_id, observation_type );
+        //summaryDS;
 
-                prcpDS := TABLE( summaryDS( observation_type = 'PRCP' ), { STRING series := station_id; DECIMAL10_2 prcp := AVE(GROUP, total); DECIMAL10_2 snow := 0; }, station_id );
-                snowDS := TABLE( summaryDS( observation_type = 'SNOW' ), { STRING series := station_id; DECIMAL10_2 prcp := 0; DECIMAL10_2 snow :=  AVE(GROUP, total); }, station_id );
-                allDS := prcpDS + snowDS;
-                chartData := ROLLUP(SORT( allDS, series ), LEFT.series = RIGHT.series, TRANSFORM( chart_layout,
-                    SELF.prcp := LEFT.prcp + RIGHT.prcp;
-                    SELF.snow := LEFT.snow + RIGHT.snow;
-                    SELF := LEFT;
-                ));
-                OUTPUT(chartData);
+        // 2) Format data for chart
+        chart_layout := RECORD
+            STRING series;
+            DECIMAL10_2 prcp;
+            DECIMAL10_2 snow;
+        END;
+
+        prcpDS := TABLE( summaryDS( observation_type = 'PRCP' ), { STRING series := station_id; DECIMAL10_2 prcp := AVE(GROUP, total); DECIMAL10_2 snow := 0; }, station_id );
+        snowDS := TABLE( summaryDS( observation_type = 'SNOW' ), { STRING series := station_id; DECIMAL10_2 prcp := 0; DECIMAL10_2 snow :=  AVE(GROUP, total); }, station_id );
+        allDS := prcpDS + snowDS;
+        chartData := ROLLUP(SORT( allDS, series ), LEFT.series = RIGHT.series, TRANSFORM( chart_layout,
+            SELF.prcp := LEFT.prcp + RIGHT.prcp;
+            SELF.snow := LEFT.snow + RIGHT.snow;
+            SELF := LEFT;
+        ));
+        OUTPUT(chartData);
 ```
 
 The ECL code might look complicated only because it accomplishes two purposes: 1) create a summary for only certain observations (`PRCP` and `SNOW`) for only some stations (e.g. `US1COCF0015`), and 2) transforms the data from that summary into a format we can easily leverage to create a chart.
@@ -333,42 +328,41 @@ The final activity generated a url to visualize the summary we created in the pr
 
 ```yml
 chart:
-    files:
-        "/var/lib/HPCCSystems/mydropzone/csv_to_chart_data.sh":
-            content: |
-                #!/bin/bash
-                file=$1
-                skip_lines=${2:-1}
-                header_line=${3:-1}
-                columns=$(sed "${header_line}q;d" $file | sed "s/\,/\|/g" | sed s/\"//g | awk 'BEGIN { FS="|"; OFS="|" }; {first = $1; $1 = ""; print $0; }' | cut -c2-)
-                tail_lines=`expr ${skip_lines} + 1`
-                series=$(tail -n +${tail_lines} $file | awk 'BEGIN { FS=","; }; { print $1 }' | tr '\n' '|' | sed s/\"//g)
-                data=$(tail -n +${tail_lines} $file | awk 'BEGIN { FS=","; OFS=","; }; { $1=""; print $0; }' | cut -c2- | sed s/\"//g | tr '\n' '|' | sed 's/.$//')
-                echo $columns
-                echo $series
-                echo $data
-                
-    commands:
-        000_chart_data:
-            command: bash /var/lib/HPCCSystems/mydropzone/csv_to_chart_data.sh /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data_raw.csv 2 2 > /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data.txt
-            
-    image_charts:
-        prcp_snow_chart:
-            data: /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data.txt
-            chs: 700x200
-            cht: bvg
-            chxt: x,y
-            chxs: 1N*s* inches,000000
+  files:
+    "/var/lib/HPCCSystems/mydropzone/csv_to_chart_data.sh":
+      content: |
+        #!/bin/bash
+        file=$1
+        skip_lines=${2:-1}
+        header_line=${3:-1}
+        columns=$(sed "${header_line}q;d" $file | sed "s/\,/\|/g" | sed s/\"//g | awk 'BEGIN { FS="|"; OFS="|" }; {first = $1; $1 = ""; print $0; }' | cut -c2-)
+        tail_lines=`expr ${skip_lines} + 1`
+        series=$(tail -n +${tail_lines} $file | awk 'BEGIN { FS=","; }; { print $1 }' | tr '\n' '|' | sed s/\"//g)
+        data=$(tail -n +${tail_lines} $file | awk 'BEGIN { FS=","; OFS=","; }; { $1=""; print $0; }' | cut -c2- | sed s/\"//g | tr '\n' '|' | sed 's/.$//')
+        echo $columns
+        echo $series
+        echo $data
+
+  commands:
+    000_chart_data:
+      command: bash /var/lib/HPCCSystems/mydropzone/csv_to_chart_data.sh /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data_raw.csv 2 2 > /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data.txt
+
+  image_charts:
+    prcp_snow_chart:
+      data: /var/lib/HPCCSystems/mydropzone/noaa_ghcn_daily_2018_prcp_snow_chart_data.txt
+      chs: 700x200
+      cht: bvg
+      chxt: x,y
+      chxs: 1N*s* inches,000000
 ```
 
 The data generated from the step before cannot be used as it to create the url.
 To create a url from image-charts.com, we need 1) the labels for the x-axis to be pipe ("|") delimited, 2) the names of the series also pipe ("|") delimited, 3) and then all the series values delimited by commas (",") and separated by a pipe ("|").
-To generate all this, the *chart* activity first creates a script `csv_to_chart_data.sh` that read the output of the previous step and generated those 3 elements.
+To generate all this, the _chart_ activity first creates a script `csv_to_chart_data.sh` that read the output of the previous step and generated those 3 elements.
 
 It then execute that script against our `noaa_ghcn_daily_2018_prcp_snow_chart_data_raw.csv` file and generated a new file named `noaa_ghcn_daily_2018_prcp_snow_chart_data.txt`.
 
 Finally, it reads that `noaa_ghcn_daily_2018_prcp_snow_chart_data.txt` file to generate the chart url.
-
 
 # Run it
 
@@ -383,13 +377,13 @@ etl-js run prcp_snow_chart.yml
 
 To run only certain activities at a time, add the name of activity at the end of the previous command, and if you want to run more than one activity, separate those by a comma (",").
 
-If you wanted to run only say *extract* and *load* activities, you'd do:
+If you wanted to run only say _extract_ and _load_ activities, you'd do:
 
 ```bash
 etl-js run prcp_snow_chart.yml extract,load
 ```
 
-For the very first run, it might be best to go about it step by step: first run the *extrat* activity, then the *load*, then *cert*, etc, like so:
+For the very first run, it might be best to go about it step by step: first run the _extrat_ activity, then the _load_, then _cert_, etc, like so:
 
 ```bash
 etl-js run prcp_snow_chart.yml extract
@@ -398,13 +392,11 @@ etl-js run prcp_snow_chart.yml cert
 # etc.
 ```
 
-
-After running the very last activity (*chart*), you should get a url like this one:
+After running the very last activity (_chart_), you should get a url like this one:
 
 > https://image-charts.com/chart?chs=700x200&cht=bvg&chxt=x,y&chxs=1N*s*%20inches,000000&....
 
 Just copy it and paste it in a browser.
-
 
 # Food for thoughts
 
@@ -422,25 +414,23 @@ If for whatever reason one would deem right to put the files `dfuplus.ini` and `
 
 ```yml
 etl:
-    - prerequisites
-    - extract
-    - ...
+  - prerequisites
+  - extract
+  - ...
 
 prerequisites:
-    files:
-        "/home/hpccdemo/dfuplus.ini":
-            content: |
-                server=http://127.0.0.1:8010
-                username=hpccdemo
-                password=hpccdemo
-                overwrite=1
-                replicate=0
-        "/home/hpccdemo/eclplus.ini":
-            content: |
-                server=127.0.0.1
-                username=hpccdemo
-                password=hpccdemo
-extract:
-    ...
-
+  files:
+    "/home/hpccdemo/dfuplus.ini":
+      content: |
+        server=http://127.0.0.1:8010
+        username=hpccdemo
+        password=hpccdemo
+        overwrite=1
+        replicate=0
+    "/home/hpccdemo/eclplus.ini":
+      content: |
+        server=127.0.0.1
+        username=hpccdemo
+        password=hpccdemo
+extract: ...
 ```

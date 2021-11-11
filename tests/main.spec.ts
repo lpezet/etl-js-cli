@@ -80,7 +80,7 @@ describe("main", function() {
       etl: { executor: "local1" },
       executors: { local1: { type: "local" } }
     };
-    const oETLActivities = { etl: {} };
+    const oETLActivities = { etlSets: {} };
     const oParameters = {};
     const oTested = new Main();
     oTested.init({}).then(
@@ -105,7 +105,7 @@ describe("main", function() {
       etl: { executor: "local1" },
       executors: { local1: { type: "local" } }
     };
-    const oETLActivities = { etl: {} };
+    const oETLActivities = { etlSets: {} };
     const oParameters = { silent: true };
     const oTested = new Main();
     oTested.init({}).then(
@@ -130,7 +130,7 @@ describe("main", function() {
       etl: { executor: "remote1" },
       executors: { remote1: { type: "remote" } }
     };
-    const oETLActivities = { etl: {} };
+    const oETLActivities = { etlSets: {} };
     const oParameters = {};
     const oTested = new Main();
     oTested.init({}).then(
@@ -155,7 +155,7 @@ describe("main", function() {
       etl: { executor: "unknown1" },
       executors: { unknown1: { type: "unknown" } }
     };
-    const oETLActivities = { etl: {} };
+    const oETLActivities = { etlSets: {} };
     const oParameters = {};
     const oTested = new Main();
     oTested.init({}).then(
@@ -177,7 +177,7 @@ describe("main", function() {
 
   it("invalidSettings", function(done) {
     const oInvalidSettings = {};
-    const oETLActivities = { etl: {} };
+    const oETLActivities = { etlSets: {} };
     const oParameters = {};
     const oTested = new Main();
     oTested.run(oInvalidSettings, oETLActivities, oParameters).then(
@@ -192,7 +192,7 @@ describe("main", function() {
 
   it("invalidSettingsMissingExecutor", function(done) {
     const oInvalidSettings = { executors: {}, etl: { executor: "missing" } };
-    const oETLActivities = { etl: {} };
+    const oETLActivities = { etlSets: {} };
     const oParameters = {};
     const oTested = new Main();
     oTested.run(oInvalidSettings, oETLActivities, oParameters).then(
