@@ -12,7 +12,7 @@ import { configureLogger } from "@lpezet/etl-js";
 const args = process.argv.slice(2);
 
 const logFilename = path.join(path.resolve("./"), "etl-js.log");
-//const logFilename = path.join(path.resolve(__dirname, "../../"), "etl-js.log");
+// const logFilename = path.join(path.resolve(__dirname, "../../"), "etl-js.log");
 // const logFilename = path.join("/var/log/", "/cue-me-in.log");
 
 const debugging = _.includes(args, "--debug");
@@ -39,6 +39,12 @@ if (Fs.existsSync(oSettingsFile)) {
 
 const oCLI = new CLI(new Main());
 oCLI.init(oSettings);
-oCLI.run(process.argv).then(() => {
-  console.log("Done!!!");
-});
+oCLI
+  .run(process.argv)
+  .then(() => {
+    console.log("Done!!!");
+    process.exit(0);
+  })
+  .catch(() => {
+    process.exit(1);
+  });
