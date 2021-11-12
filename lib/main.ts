@@ -12,7 +12,8 @@ import {
   ImageChartsMod,
   InteractivesMod,
   MySQLImportsMod,
-  MySQLsMod
+  MySQLsMod,
+  TestsMod
 } from "@lpezet/etl-js";
 
 const LOGGER = createLogger("etljs-cli::main");
@@ -189,6 +190,7 @@ export default class Main implements IMain {
     new HPCCSpraysMod().register(oETL);
     new ImageChartsMod().register(oETL);
     new InteractivesMod().register(oETL);
+    new TestsMod().register(oETL);
     /*
     registerMod(oETL, "@lpezet/etl-js/lib/commands");
     registerMod(oETL, "@lpezet/etl-js/lib/files");
