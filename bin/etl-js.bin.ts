@@ -7,7 +7,7 @@ import Main from "../lib/main";
 import CLI from "../lib/cli";
 import * as _ from "lodash";
 
-import { configureLogger } from "@lpezet/etl-js";
+import { configureLogger, loggerShutdown } from "@lpezet/etl-js";
 
 const args = process.argv.slice(2);
 
@@ -24,7 +24,11 @@ configureLogger({
       type: "file",
       filename: logFilename,
       maxLogSize: 20971520,
-      backups: 3
+      backups: 3,
+      layout: {
+        type: "pattern",
+        pattern: "%d %5.5p %25.25c - %m"
+      }
     },
     console: { type: "console", layout: { type: "messagePassThrough" } }
   },
@@ -43,8 +47,12 @@ oCLI
   .run(process.argv)
   .then(() => {
     console.log("Done!!!");
-    process.exit(0);
+    loggerShutdown(() => {
+      process.exit(0);
+    });
   })
   .catch(() => {
-    process.exit(1);
+    loggerShutdown(() => {
+      process.exit(1);
+    });
   });
