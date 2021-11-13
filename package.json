@@ -8,7 +8,7 @@
   },
   "scripts": {
     "copy-templates": "[ ! -d dist/lib/templates ] && mkdir -p dist/lib/templates; cp -r lib/templates/* dist/lib/templates/",
-    "dist": "npm run clean && npm run tsc -- --build tsconfig.publish.json && npm run copy-templates && chmod +x dist/bin/etl-js.bin.js",
+    "dist": "npm run clean && npm run tsc -- --build tsconfig.publish.json && npm run copy-templates && cp README.md dist/ && chmod +x dist/bin/etl-js.bin.js",
     "tsc": "tsc",
     "clean": "rimraf dist",
     "lint": "eslint --ext .ts lib/ tests/",
@@ -67,7 +67,7 @@
   },
   "homepage": "https://github.com/lpezet/etl-js-cli#readme",
   "dependencies": {
-    "@lpezet/etl-js": "^3.0.7",
+    "@lpezet/etl-js": "^3.0.8",
     "commander": "^5.1.0",
     "lodash": "^4.17.21",
     "log4js": "^6.1.2",
