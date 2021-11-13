@@ -67,7 +67,7 @@
   },
   "homepage": "https://github.com/lpezet/etl-js-cli#readme",
   "dependencies": {
-    "@lpezet/etl-js": "^3.0.8",
+    "@lpezet/etl-js": "^3.0.9",
     "commander": "^5.1.0",
     "lodash": "^4.17.21",
     "log4js": "^6.1.2",
