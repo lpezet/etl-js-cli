@@ -223,7 +223,8 @@ export default class Main implements IMain {
           resolve();
         })
         .catch((pError: Error) => {
-          LOGGER.error("Error running ETL.", pError);
+          LOGGER.error("Error running ETL.");
+          console.dir(pError, { depth: null });
           reject(pError);
         });
     });
