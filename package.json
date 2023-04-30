@@ -94,7 +94,7 @@
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-jsdoc": "^22.1.0",
     "eslint-plugin-prettier": "^3.1.0",
-    "mocha": "^8.4.0",
+    "mocha": "^10.2.0",
     "nyc": "^14.1.1",
     "prettier": "^1.19.0",
     "rimraf": "^3.0.2",
